@@ -18,10 +18,10 @@ class DevotionalGenerator:
         )
 
     def generate_themes(self):
-        prompt = """Gere 10 temas para devocionais cristãos voltados para mulheres.
+        prompt_text = """Gere 10 temas para devocionais cristãos voltados para mulheres.
         Os temas devem ser relevantes e inspiradores."""
-        
-        themes = self.agent.execute_task(prompt)
+    
+        themes = self.agent.execute_task(prompt_text)
         return [theme.strip() for theme in themes.split('\n') if theme.strip()]
 
     def generate_content(self, theme):
