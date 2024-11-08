@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Devocionais</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f3e8ff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #6b21a8;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .theme-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .primary-button {
+            background-color: #6b21a8;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background-color: #581c87;
+        }
+
+        .secondary-button {
+            background-color: #e9d5ff;
+            color: #6b21a8;
+        }
+
+        .secondary-button:hover {
+            background-color: #d8b4fe;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #manual-input {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            border: 1px solid #d8b4fe;
+            border-radius: 5px;
+        }
+
+        #theme-list {
+            margin-top: 20px;
+        }
+
+        .theme-button {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #f3e8ff;
+            border: 1px solid #d8b4fe;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .theme-button:hover {
+            background-color: #e9d5ff;
+        }
+
+        #loading {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .devotional-content, .prayer-content {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f5ff;
+            border-radius: 5px;
+        }
+
+        h2 {
+            color: #6b21a8;
+            margin-bottom: 15px;
+        }
+
+        .startup-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+
+        .startup-loading.hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6b21a8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .startup-tip {
+            font-size: 0.9em;
+            color: #d1d5db;
+            margin-top: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .history-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .history-date {
+            color: #6b21a8;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .history-theme {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .history-content {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e9d5ff;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .copy-button {
+            background: #f3e8ff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #6b21a8;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: #e9d5ff;
+        }
+
+        .copy-icon {
+            font-size: 16px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4c1d95;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Devocionais</h1>
+        
+        <div id="initial-selection" class="theme-selector">
+            <button class="button primary-button" onclick="showManualInput()">Inserir tema manualmente</button>
+            <button class="button secondary-button" onclick="showThemeList()">Escolher da lista de sugestões</button>
+            <button class="button secondary-button" onclick="showHistory()">Ver Histórico</button>
+        </div>
+
+        <div id="manual-input" class="hidden">
+            <input type="text" id="manual-theme" placeholder="Digite o tema do devocional">
+            <button class="button primary-button" onclick="generateDevotional('manual')">Gerar Devocional</button>
+            <button class="button secondary-button" onclick="showInitialSelection()">Voltar</button>
+        </div>
+
+        <div id="theme-list" class="hidden">
+            <div id="themes-container"></div>
+            <button class="button secondary-button" onclick="showInitialSelection()">Voltar</button>
+        </div>
+
+        <div id="loading" class="hidden">
+            <p>Gerando devocional...</p>
+        </div>
+
+        <div id="devotional-result" class="hidden">
+            <div class="devotional-content">
+                <div class="content-header">
+                    <h2>Devocional</h2>
+                    <button class="copy-button" onclick="copyContent('devotional-text')">
+                        <span class="copy-icon">📋</span> Copiar
+                    </button>
+                </div>
+                <div id="devotional-text"></div>
+            </div>
+            
+            <div class="prayer-content">
+                <div class="content-header">
+                    <h2>Oração</h2>
+                    <button class="copy-button" onclick="copyContent('prayer-text')">
+                        <span class="copy-icon">📋</span> Copiar
+                    </button>
+                </div>
+                <div id="prayer-text"></div>
+            </div>
+
+            <div class="button-group">
+                <button class="button primary-button" onclick="saveCurrentDevotional()">
+                    Salvar no Histórico
+                </button>
+                <button class="button secondary-button" onclick="generateNewDevotional()">
+                    Gerar Novo Devocional
+                </button>
+                <button class="button secondary-button" onclick="showInitialSelection()">
+                    Voltar ao Início
+                </button>
+            </div>
+        </div>
+
+        <div id="history-section" class="hidden">
+            <h2>Histórico de Devocionais</h2>
+            <button class="button secondary-button" onclick="clearHistory()">Limpar Histórico</button>
+            <div id="history-list" class="history-list">
+                <!-- Histórico será inserido aqui -->
+            </div>
+            <button class="button secondary-button" onclick="showInitialSelection()">Voltar</button>
+        </div>
+
+        <div id="startup-loading" class="startup-loading hidden">
+            <div class="loading-spinner"></div>
+            <p>Iniciando o serviço, por favor aguarde...</p>
+            <p class="startup-tip">Primeira execução pode levar até 30 segundos</p>
+        </div>
+
+        <div id="toast" class="toast hidden">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'sua-url-do-render';
+        let currentTheme = '';
+        let currentDevotional = null;
+        let isStarting = false;
+
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            let lastError;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: AbortSignal.timeout(60000)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    console.log(`Tentativa ${i + 1} falhou:`, error);
+                    lastError = error;
+                    
+                    if (i < maxRetries - 1) {
+                        await delay(2000 * (i + 1));
+                    }
+                }
+            }
+            
+            throw lastError;
+        }
+
+        async function checkServiceStatus() {
+            if (isStarting) return;
+            
+            try {
+                document.getElementById('startup-loading').classList.remove('hidden');
+                isStarting = true;
+                
+                await fetchWithRetry(`${API_URL}/themes`, {
+                    method: 'GET'
+                });
+                
+                isStarting = false;
+                document.getElementById('startup-loading').classList.add('hidden');
+            } catch (error) {
+                console.error('Erro ao iniciar serviço:', error);
+                showToast('Erro ao iniciar o serviço. Tente novamente.');
+                isStarting = false;
+                document.getElementById('startup-loading').classList.add('hidden');
+            }
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            toast.classList.add('visible');
+            
+            setTimeout(() => {
+                toast.classList.remove('visible');
+                toast.classList.add('hidden');
+            }, duration);
+        }
+
+        async function copyContent(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('Texto copiado com sucesso!');
+            } catch (err) {
+                showToast('Erro ao copiar texto. Tente novamente.');
+                console.error('Erro ao copiar:', err);
+            }
+        }
+
+        function showManualInput() {
+            document.getElementById('initial-selection').classList.add('hidden');
+            document.getElementById('manual-input').classList.remove('hidden');
+        }
+
+        async function showThemeList() {
+            document.getElementById('initial-selection').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            
+            try {
+                const response = await fetchWithRetry(`${API_URL}/themes`, {
+                    method: 'GET'
+                });
+                const themes = await response.json();
+                
+                const themesContainer = document.getElementById('themes-container');
+                themesContainer.innerHTML = themes.map(theme => 
+                    `<button class="theme-button" onclick="generateDevotional('list', '${theme}')">${theme}</button>`
+                ).join('');
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('theme-list').classList.remove('hidden');
+            } catch (error) {
+                console.error('Erro ao carregar temas:', error);
+                showToast('Erro ao carregar temas. Tente novamente.');
+                showInitialSelection();
+            }
+        }
+
+        async function generateDevotional(mode, selectedTheme = '') {
+            await checkServiceStatus();
+            
+            const theme = mode === 'manual' 
+                ? document.getElementById('manual-theme').value 
+                : selectedTheme;
+            
+            if (!theme) {
+                showToast('Por favor, insira um tema.');
+                return;
+            }
+
+            currentTheme = theme;
+            await generateNewDevotional();
+        }
+
+        async function generateNewDevotional() {
+            document.getElementById('manual-input').classList.add('hidden');
+            document.getElementById('theme-list').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('devotional-result').classList.add('hidden');
+
+            try {
+                const response = await fetchWithRetry(`${API_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ theme: currentTheme }),
+                });
+
+                currentDevotional = await response.json();
+                
+                document.getElementById('devotional-text').innerHTML = 
+                    currentDevotional.devotional.split('\n').map(p => `<p>${p}</p>`).join('');
+                document.getElementById('prayer-text').innerHTML = 
+                    currentDevotional.prayer.split('\n').map(p => `<p>${p}</p>`).join('');
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('devotional-result').classList.remove('hidden');
+            } catch (error) {
+                console.error('Erro ao gerar devocional:', error);
+                showToast('Erro ao gerar devocional. Tente novamente.');
+                showInitialSelection();
+            }
+        }
+
+        async function saveCurrentDevotional() {
+            if (!currentDevotional) return;
+
+            try {
+                await fetchWithRetry(`${API_URL}/save-to-history`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        theme: currentTheme,
+                        devotional: currentDevotional.devotional,
+                        prayer: currentDevotional.prayer
+                    }),
+                });
+
+                showToast('Devocional salvo no histórico com sucesso!');
+                setTimeout(() => {
+                    showInitialSelection();
+                }, 1500);
+            } catch (error) {
+                console.error('Erro ao salvar no histórico:', error);
+                showToast('Erro ao salvar no histórico. Tente novamente.');
+            }
+        }
+
+        async function showHistory() {
+            try {
+                document.getElementById('initial-selection').classList.add('hidden');
+                document.getElementById('loading').classList.remove('hidden');
+                
+                const response = await fetchWithRetry(`${API_URL}/history`, {
+                    method: 'GET'
+                });
+                const history = await response.json();
+                
+                const historyList = document.getElementById('history-list');
+                historyList.innerHTML = history.reverse().map(item => `
+                    <div class="history-item">
+                        <div class="history-date">${item.date}</div>
+                        <div class="history-theme">Tema: ${item.theme}</div>
+                        <div class="history-content">
+                            <h3>Devocional</h3>
+                            <div>${item.devotional.split('\n').map(p => `<p>${p}</p>`).join('')}</div>
+                            <h3>Oração</h3>
+                            <div>${item.prayer.split('\n').map(p => `<p>${p}</p>`).join('')}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('history-section').classList.remove('hidden');
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                showToast('Erro ao carregar histórico. Tente novamente.');
+                showInitialSelection();
+            }
+        }
+
+        async function clearHistory() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                try {
+                    await fetchWithRetry(`${API_URL}/clear-history`, {
+                        method: 'POST'
+                    });
+                    showToast('Histórico limpo com sucesso!');
+                    showInitialSelection();
+                } catch (error) {
+                    console.error('Erro ao limpar histórico:', error);
+                    showToast('Erro ao limpar histórico. Tente novamente.');
+                }
+            }
+        }
+
+        function showInitialSelection() {
+            document.getElementById('manual-input').classList.add('hidden');
+            document.getElementById('theme-list').classList.add('hidden');
+            document.getElementById('devotional-result').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('history-section').classList.add('hidden');
+            document.getElementById('initial-selection').classList.remove('hidden');
+            document.getElementById('manual-theme').value = '';
+        }
+    </script>
+</body>
+</html>
