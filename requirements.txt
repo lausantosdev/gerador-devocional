@@ -4,3 +4,4 @@ crewai
 langchain-openai
 python-dotenv
 gunicorn==20.1.0
+Werkzeug==2.0.1
