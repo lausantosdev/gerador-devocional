@@ -25,16 +25,16 @@ class DevotionalGenerator:
         return [theme.strip() for theme in themes.split('\n') if theme.strip()]
 
     def generate_content(self, theme):
-        devotional_prompt = f"""Crie um devocional cristão sobre o tema: {theme}.
+        devotional_prompt_text = f"""Crie um devocional cristão sobre o tema: {theme}.
         O devocional deve incluir reflexões bíblicas e aplicações práticas."""
-        
-        prayer_prompt = f"""Crie uma oração relacionada ao tema: {theme}.
+    
+        prayer_prompt_text = f"""Crie uma oração relacionada ao tema: {theme}.
         A oração deve ser pessoal e significativa."""
-        
-        devotional = self.agent.execute_task(devotional_prompt)
-        prayer = self.agent.execute_task(prayer_prompt)
-        
+    
+        devotional = self.agent.execute_task(devotional_prompt_text)
+        prayer = self.agent.execute_task(prayer_prompt_text)
+    
         return {
             'devotional': devotional,
             'prayer': prayer
-        }
+        }              
