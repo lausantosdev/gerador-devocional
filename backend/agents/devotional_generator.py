@@ -1,4 +1,4 @@
-from crewai import Agent, Task
+from crewai import Agent, Task, TaskOutput
 from langchain_openai import ChatOpenAI
 
 class DevotionalGenerator:
@@ -21,7 +21,11 @@ class DevotionalGenerator:
         task = Task(
             description="""Gere 10 temas para devocionais cristãos voltados para mulheres.
             Os temas devem ser relevantes e inspiradores.""",
-            output="Lista de temas devocionais"
+            expected_output="Lista de temas devocionais",
+            output=TaskOutput(
+                description="Lista de temas devocionais",
+                value="Lista de temas"
+            )
         )
         themes = self.agent.execute_task(task)
         return [theme.strip() for theme in themes.split('\n') if theme.strip()]
@@ -30,13 +34,21 @@ class DevotionalGenerator:
         devotional_task = Task(
             description=f"""Crie um devocional cristão sobre o tema: {theme}.
             O devocional deve incluir reflexões bíblicas e aplicações práticas.""",
-            output="Texto do devocional"
+            expected_output="Texto do devocional",
+            output=TaskOutput(
+                description="Texto do devocional",
+                value="Devocional completo"
+            )
         )
         
         prayer_task = Task(
             description=f"""Crie uma oração relacionada ao tema: {theme}.
             A oração deve ser pessoal e significativa.""",
-            output="Texto da oração"
+            expected_output="Texto da oração",
+            output=TaskOutput(
+                description="Texto da oração",
+                value="Oração completa"
+            )
         )
         
         devotional = self.agent.execute_task(devotional_task)
