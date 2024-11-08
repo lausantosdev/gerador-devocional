@@ -20,7 +20,8 @@ class DevotionalGenerator:
     def generate_themes(self):
         task = Task(
             description="""Gere 10 temas para devocionais cristãos voltados para mulheres.
-            Os temas devem ser relevantes e inspiradores."""
+            Os temas devem ser relevantes e inspiradores.""",
+            output="Lista de temas devocionais"
         )
         themes = self.agent.execute_task(task)
         return [theme.strip() for theme in themes.split('\n') if theme.strip()]
@@ -28,12 +29,14 @@ class DevotionalGenerator:
     def generate_content(self, theme):
         devotional_task = Task(
             description=f"""Crie um devocional cristão sobre o tema: {theme}.
-            O devocional deve incluir reflexões bíblicas e aplicações práticas."""
+            O devocional deve incluir reflexões bíblicas e aplicações práticas.""",
+            output="Texto do devocional"
         )
         
         prayer_task = Task(
             description=f"""Crie uma oração relacionada ao tema: {theme}.
-            A oração deve ser pessoal e significativa."""
+            A oração deve ser pessoal e significativa.""",
+            output="Texto da oração"
         )
         
         devotional = self.agent.execute_task(devotional_task)
