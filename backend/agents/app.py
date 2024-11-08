@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from devotional_generator import DevotionalGenerator
+from backend.agents.devotional_generator import DevotionalGenerator
 from datetime import datetime
 import json
 
